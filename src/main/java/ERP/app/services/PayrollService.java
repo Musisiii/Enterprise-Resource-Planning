@@ -34,6 +34,9 @@ public class PayrollService {
     @Autowired
     private Email emailService;
 
+    @Autowired
+    private MessageService messageService;
+
     @Transactional
     public List<PaySlip> generatePayroll(int month, int year) {
         logger.info("Generating payroll for {}/{}", month, year);
@@ -107,37 +110,38 @@ public class PayrollService {
     public void approvePayroll(int month, int year) {
         logger.info("Approving payroll for {}/{}", month, year);
 
+        // 1. Find all payslips for the period
         List<PaySlip> paySlips = paySlipRepository.findByMonthAndYear(month, year);
+        
         if (paySlips.isEmpty()) {
             logger.warn("No payslips found for {}/{}", month, year);
             throw new IllegalStateException("No payslips found for approval");
         }
 
-        paySlips.forEach(paySlip -> {
+        // 2. Process each payslip
+        for (PaySlip paySlip : paySlips) {
             if (paySlip.getStatus() == PaySlipStatus.PENDING) {
+                // A. Change status to PAID
                 paySlip.setStatus(PaySlipStatus.PAID);
                 paySlipRepository.save(paySlip);
                 logger.info("Approved payslip ID {} for employee {}", paySlip.getId(), paySlip.getEmployee().getEmail());
-            }
-        });
 
-        List<Message> messages = messageRepository.findByMonthAndYear(month, year);
-        if (messages.isEmpty()) {
-            logger.warn("No messages found for {}/{}", month, year);
+                // B. TRIGGER: Generate message and send email automatically (as per spec)
+                // By passing 'null' as the message content, MessageService will use the default template
+                try {
+                    messageService.sendMessage(
+                        paySlip.getEmployee().getId(), 
+                        null, 
+                        month, 
+                        year
+                    );
+                } catch (Exception e) {
+                    // Log error but don't stop the whole process if one email fails
+                    logger.error("Failed to generate message/email for employee {}: {}", 
+                        paySlip.getEmployee().getEmail(), e.getMessage());
+                }
+            }
         }
-
-        messages.forEach(message -> {
-            try {
-                emailService.sendEmail(
-                        message.getEmployee().getEmail(),
-                        "Salary Payment Notification",
-                        message.getMessage()
-                );
-                logger.info("Sent email to {}", message.getEmployee().getEmail());
-            } catch (Exception e) {
-                logger.error("Failed to send email to {}: {}", message.getEmployee().getEmail(), e.getMessage());
-            }
-        });
     }
 
     public List<PaySlipRes> getPaySlipsByMonthYear(int month, int year) {
