@@ -1,6 +1,6 @@
 HELP.md
 target/
-.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
@@ -32,5 +32,11 @@ build/
 ### VS Code ###
 .vscode/
 
-.sql
-.fig
+### Logs and Environment ###
+*.log
+.env
+.env.local
+
+### OS specific files ###
+.DS_Store
+Thumbs.db
