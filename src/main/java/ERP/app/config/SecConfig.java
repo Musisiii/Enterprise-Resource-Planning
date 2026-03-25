@@ -16,6 +16,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 public class SecConfig {
+
     @Autowired
     private JwtAuthFilter jwtAuthFilter;
 
@@ -25,12 +26,14 @@ public class SecConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/swagger-ui/**", "/api-docs/**").permitAll()
-                        .requestMatchers("/api/employees/register").hasRole("MANAGER")
-                        .requestMatchers("/api/employees/**").hasAnyRole("MANAGER", "EMPLOYEE")
-                        .requestMatchers("/api/deductions/**").hasRole("MANAGER")
-                        .requestMatchers("/api/payroll/generate").hasRole("MANAGER")
-                        .requestMatchers("/api/payroll/approve").hasRole("ADMIN")
-                        .requestMatchers("/api/payroll/**").hasAnyRole("MANAGER", "EMPLOYEE")
+                        // Use hasAuthority because your SQL dump already contains the "ROLE_" prefix
+                        .requestMatchers("/api/employees/register").hasAuthority("ROLE_MANAGER")
+                        .requestMatchers("/api/employees/**").hasAnyAuthority("ROLE_MANAGER", "ROLE_EMPLOYEE", "ROLE_ADMIN")
+                        .requestMatchers("/api/deductions/**").hasAuthority("ROLE_MANAGER")
+                        .requestMatchers("/api/payroll/generate").hasAuthority("ROLE_MANAGER")
+                        .requestMatchers("/api/payroll/approve").hasAuthority("ROLE_ADMIN")
+                        // Ensure ADMIN can view payroll list to approve them
+                        .requestMatchers("/api/payroll/**").hasAnyAuthority("ROLE_MANAGER", "ROLE_EMPLOYEE", "ROLE_ADMIN")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

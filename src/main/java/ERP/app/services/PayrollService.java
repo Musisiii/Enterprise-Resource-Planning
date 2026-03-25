@@ -50,12 +50,12 @@ public class PayrollService {
             throw new IllegalStateException("Deduction records are missing");
         }
 
-        double employeeTaxRate = getDeductionRate(deductions, "EMPLOYEE_TAX", 30.0);
-        double pensionRate = getDeductionRate(deductions, "PENSION", 7.0);
-        double medicalRate = getDeductionRate(deductions, "MEDICAL_INSURANCE", 5.0);
-        double otherRate = getDeductionRate(deductions, "OTHERS", 5.0);
-        double houseRate = getDeductionRate(deductions, "HOUSING", 10.0);
-        double transportRate = getDeductionRate(deductions, "TRANSPORT", 10.0);
+        double employeeTaxRate = getDeductionRate(deductions, "employee tax", 30.0);
+        double pensionRate = getDeductionRate(deductions, "pension", 6.0); // Updated to 6%
+        double medicalRate = getDeductionRate(deductions, "medical insurance", 5.0);
+        double otherRate = getDeductionRate(deductions, "others", 5.0);
+        double houseRate = getDeductionRate(deductions, "housing", 14.0); // Updated to 14%
+        double transportRate = getDeductionRate(deductions, "transport", 14.0); // Updated to 14%
 
         List<PaySlip> paySlips = activeEmployments.stream().map(employment -> {
             Employee employee = employment.getEmployee();
@@ -80,7 +80,7 @@ public class PayrollService {
                 throw new IllegalStateException("Deductions exceed gross salary for employee " + employee.getEmail());
             }
 
-            double netSalary = grossSalary - totalDeductions;
+            double netSalary = Math.round((grossSalary - totalDeductions) * 100.0) / 100.0;
 
             PaySlip paySlip = new PaySlip();
             paySlip.setEmployee(employee);
