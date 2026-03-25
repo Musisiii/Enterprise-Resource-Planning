@@ -16,7 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class MessageService {
     private static final Logger logger = LoggerFactory.getLogger(MessageService.class);
     private static final String DEFAULT_INSTITUTION = "ERP Corp";
-    private static final String DEFAULT_MESSAGE_TEMPLATE = "Dear %s, Your salary of %d/%d from %s %.2f has been credited to your %d account successfully.";
+    private static final String DEFAULT_MESSAGE_TEMPLATE = 
+        "Dear %s, Your salary for %d/%d from %s amounting to %.2f " +
+        "has been successfully credited to your account (%d) successfully.";
 
     @Autowired
     private MessageRepo messageRepo;
