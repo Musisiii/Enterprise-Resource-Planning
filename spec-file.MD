@@ -180,4 +180,4 @@ This system should:
 - Compute salaries 💰  
 - Enforce security 🔐  
 - Automate payroll ⚙️  
-- Notify users 📩  
+- Notify users 📩

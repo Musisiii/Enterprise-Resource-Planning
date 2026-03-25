@@ -34,12 +34,18 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "Invalid credentials")
     })
     public ResponseEntity<?> login(@RequestBody LoginReq request) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-        );
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String jwt = jwtUtil.generateToken(userDetails);
-        return ResponseEntity.ok(jwt);
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+            );
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            String jwt = jwtUtil.generateToken(userDetails);
+            return ResponseEntity.ok(jwt);
+        } catch (Exception e) {
+            // This will print the EXACT reason in your VS Code terminal
+            System.out.println("LOGIN ERROR: " + e.getMessage());
+            return ResponseEntity.status(401).body("Error: " + e.getMessage());
+        }
     }
 
     @PostMapping("/register")
